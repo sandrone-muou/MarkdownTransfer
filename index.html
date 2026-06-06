@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Transfer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div class="brand-text">
+          <h1>Markdown</h1>
+          <span>Transfer</span>
+        </div>
+      </div>
+      
+      <nav class="nav">
+        <button id="copy-btn" class="nav-btn primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          复制富文本
+        </button>
+        <button id="clear-btn" class="nav-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          清空
+        </button>
+      </nav>
+      
+      <div class="hint-box">
+        <p>输入 Markdown 文本，右侧实时预览。点击「复制富文本」即可粘贴到 Word。</p>
+      </div>
+    </aside>
+    
+    <main class="workspace">
+      <div class="pane editor-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span class="pane-icon markdown-icon">M</span>
+            <span class="pane-label">Markdown</span>
+          </div>
+          <span class="pane-status">实时编辑</span>
+        </div>
+        <textarea id="markdown-input" placeholder="在此输入 Markdown 内容..." spellcheck="false"></textarea>
+      </div>
+      
+      <div class="pane preview-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span class="pane-icon richtext-icon">R</span>
+            <span class="pane-label">富文本</span>
+          </div>
+          <span class="pane-status">可选中复制</span>
+        </div>
+        <div id="preview-output" contenteditable="true"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,518 @@
+/* ===== 基础重置 ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f7f8fa;
+  color: #1a1a2e;
+  line-height: 1.7;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== 布局 ===== */
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+/* ===== 侧边栏 ===== */
+.sidebar {
+  width: 240px;
+  background: #fff;
+  border-right: 1px solid #e8e8ec;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.brand-text h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+
+.brand-text span {
+  font-size: 13px;
+  color: #8b8b9a;
+  font-weight: 300;
+}
+
+/* ===== 导航按钮 ===== */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: #5a5a6e;
+}
+
+.nav-btn:hover {
+  background: #f0f0f5;
+  color: #1a1a2e;
+}
+
+.nav-btn.primary {
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.nav-btn.primary:hover {
+  background: #2a2a4e;
+}
+
+.nav-btn svg {
+  flex-shrink: 0;
+}
+
+/* ===== 提示框 ===== */
+.hint-box {
+  margin-top: auto;
+  padding: 16px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  border: 1px solid #e8e8ec;
+}
+
+.hint-box p {
+  font-size: 13px;
+  color: #8b8b9a;
+  line-height: 1.6;
+}
+
+/* ===== 工作区 ===== */
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  min-width: 0;
+}
+
+.editor-pane {
+  border-right: 1px solid #e8e8ec;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid #e8e8ec;
+  background: #fafafa;
+}
+
+.pane-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pane-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.markdown-icon {
+  background: #5a5a6e;
+}
+
+.richtext-icon {
+  background: #5a5a6e;
+}
+
+.pane-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pane-status {
+  font-size: 12px;
+  color: #8b8b9a;
+  font-weight: 400;
+}
+
+/* ===== 编辑器 ===== */
+#markdown-input {
+  flex: 1;
+  width: 100%;
+  padding: 24px;
+  border: none;
+  outline: none;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #1a1a2e;
+  background: #fafafa;
+  resize: none;
+  overflow-y: auto;
+}
+
+#markdown-input::placeholder {
+  color: #b8b8c8;
+}
+
+/* ===== 预览区 ===== */
+#preview-output {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+  background: #fff;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* ===== 预览内容样式 ===== */
+#preview-output h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #1a1a2e;
+  line-height: 1.3;
+}
+
+#preview-output h2 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 32px 0 16px;
+  line-height: 1.3;
+}
+
+#preview-output h3 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2a2a4e;
+  margin: 24px 0 12px;
+  line-height: 1.3;
+}
+
+#preview-output p {
+  margin: 0 0 16px;
+  color: #3a3a4e;
+  line-height: 1.8;
+}
+
+#preview-output p:last-child {
+  margin-bottom: 0;
+}
+
+#preview-output ul,
+#preview-output ol {
+  margin: 0 0 16px;
+  padding-left: 28px;
+}
+
+#preview-output li {
+  margin: 6px 0;
+  color: #3a3a4e;
+  line-height: 1.7;
+}
+
+#preview-output strong {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+#preview-output em {
+  font-style: italic;
+  color: #4a4a5e;
+}
+
+#preview-output blockquote {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border-left: 3px solid #d0d0d8;
+  background: #fafafa;
+  color: #5a5a6e;
+  font-style: italic;
+}
+
+#preview-output blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+#preview-output code {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.88em;
+  background: #f0f0f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1a1a2e;
+}
+
+#preview-output pre {
+  margin: 20px 0;
+  padding: 20px;
+  background: #1a1a2e;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+#preview-output pre code {
+  background: transparent;
+  color: #e8e8ec;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#preview-output a {
+  color: #1a1a2e;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+#preview-output a:hover {
+  color: #5a5a6e;
+}
+
+/* ===== 表格样式 ===== */
+#preview-output table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 14px;
+  border: 1px solid #d0d0d8;
+}
+
+#preview-output thead {
+  background: #f0f0f5;
+  border-bottom: 1px solid #d0d0d8;
+}
+
+#preview-output th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a2e;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  border-right: 1px solid #d0d0d8;
+}
+
+#preview-output th:last-child {
+  border-right: none;
+}
+
+#preview-output td {
+  padding: 10px 14px;
+  text-align: left;
+  color: #3a3a4e;
+  border-bottom: 1px solid #e8e8ec;
+  border-right: 1px solid #e8e8ec;
+}
+
+#preview-output td:last-child {
+  border-right: none;
+}
+
+#preview-output tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+#preview-output tbody tr:hover {
+  background: #f0f0f5;
+}
+
+#preview-output tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== 占位符 ===== */
+.placeholder {
+  color: #b8b8c8;
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.error {
+  color: #8b4513;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* ===== 通知 ===== */
+.notification {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  background: #1a1a2e;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.notification-success {
+  background: #1a1a2e;
+}
+
+.notification-warning {
+  background: #8b6914;
+}
+
+.notification-error {
+  background: #8b4513;
+}
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d0d0d8;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b8;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+    padding: 24px 16px;
+  }
+  
+  #preview-output {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 16px 20px;
+    border-right: none;
+    border-bottom: 1px solid #e8e8ec;
+    align-items: center;
+  }
+  
+  .brand {
+    margin-bottom: 0;
+    margin-right: auto;
+  }
+  
+  .nav {
+    flex-direction: row;
+    margin-bottom: 0;
+    margin-right: 16px;
+  }
+  
+  .hint-box {
+    display: none;
+  }
+  
+  .workspace {
+    flex-direction: column;
+  }
+  
+  .editor-pane {
+    border-right: none;
+    border-bottom: 1px solid #e8e8ec;
+  }
+  
+  .pane {
+    min-height: 300px;
+  }
+}
