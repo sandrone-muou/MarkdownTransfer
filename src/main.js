@@ -24,7 +24,7 @@ function handleRealTimePreview() {
   const markdown = markdownInput.value
   
   if (!markdown.trim()) {
-    previewOutput.innerHTML = '<p class="placeholder">输入 Markdown 后在此预览</p>'
+    previewOutput.innerHTML = '<p class="placeholder">输入 Markdown 后在此预览富文本效果</p>'
     return
   }
   
@@ -85,7 +85,7 @@ async function handleCopy() {
 // 处理清空
 function handleClear() {
   markdownInput.value = ''
-  previewOutput.innerHTML = '<p class="placeholder">输入 Markdown 后在此预览</p>'
+  previewOutput.innerHTML = '<p class="placeholder">输入 Markdown 后在此预览富文本效果</p>'
 }
 
 // 显示通知
@@ -114,35 +114,41 @@ function showNotification(message, type = 'info') {
 
 // 添加示例 Markdown
 function addExampleMarkdown() {
-  const exampleMarkdown = `# Markdown 转富文本
+  const exampleMarkdown = `# Markdown Transfer 使用示例
 
-将 Markdown 文本转换为富文本格式，粘贴到 Word 时保留格式。
+欢迎使用 Markdown Transfer，这是一款免费的在线 Markdown 转富文本工具。
 
-## 功能
+## 核心功能
 
-- **实时预览**：左侧输入，右侧即时显示
-- **一键复制**：点击「复制富文本」按钮
-- **手动复制**：直接选中预览内容复制
+- **实时预览**：左侧输入 Markdown，右侧即时显示富文本效果
+- **一键复制**：点击「复制富文本」按钮，直接粘贴到 Word、WPS
+- **手动复制**：直接选中预览区域内容复制
+- **客户端处理**：所有转换在浏览器本地完成，保护隐私
 
-## 语法支持
+## 支持的 Markdown 语法
 
-1. 标题（h1-h6）
-2. 粗体和*斜体*
+1. 标题（H1-H6）
+2. **粗体** 和 *斜体*
 3. 有序列表和无序列表
-4. 代码块
-5. 引用
-6. 表格
+4. 代码块和行内代码
+5. 引用块
+6. 链接
+7. 表格
 
-> 引用文本示例
+> Markdown Transfer 让文档转换变得简单高效。
 
 \`\`\`javascript
-console.log('Hello, World!')
+// 示例代码
+function hello() {
+  console.log('Hello, Markdown Transfer!')
+}
 \`\`\`
 
-| 项目 | 说明 | 状态 |
+| 功能 | 说明 | 状态 |
 |------|------|------|
-| 功能A | 已实现 | 完成 |
-| 功能B | 开发中 | 进行中 |`
+| 实时预览 | 输入即转换 | 已上线 |
+| 一键复制 | 支持 Word 粘贴 | 已上线 |
+| 表格转换 | 保留格式 | 已上线 |`
   
   markdownInput.value = exampleMarkdown
   handleRealTimePreview()

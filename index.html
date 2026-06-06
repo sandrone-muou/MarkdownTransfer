@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Transfer</title>
+  <title>Markdown Transfer - Markdown 转富文本工具</title>
+  <meta name="description" content="Markdown Transfer 是一款简洁优雅的 Markdown 转富文本工具。在浏览器中完成所有转换，无需服务器，支持实时预览、一键复制到 Word。">
+  <meta name="keywords" content="Markdown, 富文本, Word, 转换器, markdown to word, 复制粘贴, 在线工具">
+  <meta name="author" content="Markdown Transfer">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Markdown Transfer - Markdown 转富文本工具">
+  <meta property="og:description" content="在浏览器中将 Markdown 转换为富文本，一键复制粘贴到 Word、WPS 等文档中。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mt.meorain.cn">
+  <meta property="og:site_name" content="Markdown Transfer">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Markdown Transfer - Markdown 转富文本工具">
+  <meta name="twitter:description" content="在浏览器中将 Markdown 转换为富文本，一键复制粘贴到 Word、WPS 等文档中。">
+  
+  <!-- Canonical -->
+  <link rel="canonical" href="https://mt.meorain.cn">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
@@ -19,24 +39,24 @@
           <span>Transfer</span>
         </div>
       </div>
-      
+
       <nav class="nav">
-        <button id="copy-btn" class="nav-btn primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button id="copy-btn" class="nav-btn primary" aria-label="复制富文本到剪贴板">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
           复制富文本
         </button>
-        <button id="clear-btn" class="nav-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button id="clear-btn" class="nav-btn" aria-label="清空编辑器内容">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
           </svg>
           清空
         </button>
       </nav>
-      
+
       <div class="hint-box">
         <p>输入 Markdown 文本，右侧实时预览。点击「复制富文本」即可粘贴到 Word。</p>
       </div>
@@ -51,7 +71,7 @@
           </div>
           <span class="pane-status">实时编辑</span>
         </div>
-        <textarea id="markdown-input" placeholder="在此输入 Markdown 内容..." spellcheck="false"></textarea>
+        <textarea id="markdown-input" placeholder="在此输入 Markdown 内容，右侧实时转换为富文本预览..." spellcheck="false" aria-label="Markdown 编辑器"></textarea>
       </div>
       
       <div class="pane preview-pane">

@@ -4,7 +4,14 @@ export default defineConfig({
   root: '.',
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['marked']
+        }
+      }
+    }
   },
   server: {
     port: 3000,
