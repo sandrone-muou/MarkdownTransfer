@@ -4,6 +4,16 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { convertMarkdownToHtml, exportToDocx, exportToTxt } from './lib/export';
 import styles from './page.module.css';
 
+// 异步加载字体，不阻塞页面渲染
+if (typeof document !== 'undefined') {
+  const link = document.createElement('link');
+  link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap';
+  link.rel = 'stylesheet';
+  link.media = 'print';
+  link.onload = () => { link.media = 'all'; };
+  document.head.appendChild(link);
+}
+
 const EXAMPLE_MARKDOWN = `# Markdown Transfer 使用示例
 
 欢迎使用 Markdown Transfer，这是一款免费的在线 Markdown 转富文本工具。

@@ -21,28 +21,68 @@ export function exportToTxt(markdown: string, filename = 'document') {
 }
 
 // ===== 导出为 Word (.docx) =====
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Token = any;
-
-// 收集列表项中的内联 token（递归跳过嵌套 list）
-function collectInlineTokens(tokens: Token[]): Token[] {
-  const result: Token[] = [];
-  for (const token of tokens) {
-    if (token.type === 'list') continue;
-    if (token.type === 'text' && token.tokens) {
-      result.push(...token.tokens);
-    } else if (token.type === 'paragraph' && token.tokens) {
-      result.push(...token.tokens);
-    } else {
-      result.push(token);
-    }
-  }
-  return result;
-}
+// 通过解析 HTML DOM 来构建 docx，比遍历 marked token 树更可靠
 
 async function getDocxModules() {
-  const docx = await import('docx');
-  return docx;
+  return import('docx');
+}
+
+// 从 DOM 节点提取内联内容（TextRun / ExternalHyperlink）
+function parseHtmlInline(
+  node: Node,
+  TextRun: typeof import('docx').TextRun,
+  ExternalHyperlink: typeof import('docx').ExternalHyperlink,
+  baseStyle: { bold?: boolean; italics?: boolean } = {},
+): InstanceType<typeof TextRun | typeof ExternalHyperlink>[] {
+  const result: InstanceType<typeof TextRun | typeof ExternalHyperlink>[] = [];
+
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent || '';
+    if (text) {
+      result.push(new TextRun({ text, ...baseStyle }));
+    }
+    return result;
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) return result;
+
+  const el = node as HTMLElement;
+  const tag = el.tagName.toLowerCase();
+
+  // 继承并叠加样式
+  const style = { ...baseStyle };
+  if (tag === 'strong' || tag === 'b') style.bold = true;
+  if (tag === 'em' || tag === 'i') style.italics = true;
+
+  if (tag === 'a') {
+    const href = el.getAttribute('href') || '#';
+    const linkText = el.textContent || '';
+    result.push(
+      new ExternalHyperlink({
+        children: [new TextRun({ text: linkText, style: 'Hyperlink' })],
+        link: href,
+      })
+    );
+    return result;
+  }
+
+  if (tag === 'code' && !el.querySelector('pre')) {
+    // 行内代码
+    result.push(new TextRun({ text: el.textContent || '', font: 'Courier New', size: 20, ...baseStyle }));
+    return result;
+  }
+
+  if (tag === 'br') {
+    result.push(new TextRun({ text: '', break: 1 }));
+    return result;
+  }
+
+  // 递归处理子节点
+  for (const child of Array.from(el.childNodes)) {
+    result.push(...parseHtmlInline(child, TextRun, ExternalHyperlink, style));
+  }
+
+  return result;
 }
 
 export async function exportToDocx(markdown: string, filename = 'document') {
@@ -51,206 +91,169 @@ export async function exportToDocx(markdown: string, filename = 'document') {
     Table, TableRow, TableCell, WidthType, BorderStyle, ExternalHyperlink,
   } = await getDocxModules();
 
-  type InlineContent = InstanceType<typeof TextRun> | InstanceType<typeof ExternalHyperlink>;
+  const html = convertMarkdownToHtml(markdown);
+  const container = document.createElement('div');
+  container.innerHTML = html;
 
-  function parseInlineTokens(tokens: Token[]): InlineContent[] {
-    const runs: InlineContent[] = [];
-    for (const token of tokens) {
-      switch (token.type) {
-        case 'text':
-          runs.push(new TextRun({ text: token.text || '' }));
-          break;
-        case 'strong':
-          runs.push(
-            new TextRun({
-              text: getInlineText(token.tokens || []),
-              bold: true,
-            })
-          );
-          break;
-        case 'em':
-          runs.push(
-            new TextRun({
-              text: getInlineText(token.tokens || []),
-              italics: true,
-            })
-          );
-          break;
-        case 'codespan':
-          runs.push(
-            new TextRun({
-              text: token.text || '',
-              font: 'Courier New',
-              size: 20,
-            })
-          );
-          break;
-        case 'link':
-          runs.push(
-            new ExternalHyperlink({
-              children: [new TextRun({ text: token.text || '', style: 'Hyperlink' })],
-              link: token.href || '#',
-            })
-          );
-          break;
-        case 'br':
-          runs.push(new TextRun({ text: '', break: 1 }));
-          break;
-        default:
-          if (token.tokens) {
-            runs.push(...parseInlineTokens(token.tokens));
-          } else if (token.text) {
-            runs.push(new TextRun({ text: token.text }));
-          }
-      }
+  type DocxChild = InstanceType<typeof Paragraph> | InstanceType<typeof Table>;
+  const children: DocxChild[] = [];
+
+  const headingMap: Record<string, (typeof HeadingLevel)[keyof typeof HeadingLevel]> = {
+    h1: HeadingLevel.HEADING_1,
+    h2: HeadingLevel.HEADING_2,
+    h3: HeadingLevel.HEADING_3,
+    h4: HeadingLevel.HEADING_4,
+    h5: HeadingLevel.HEADING_5,
+    h6: HeadingLevel.HEADING_6,
+  };
+
+  for (const el of Array.from(container.children)) {
+    const tag = el.tagName.toLowerCase();
+
+    // 标题
+    if (headingMap[tag]) {
+      children.push(
+        new Paragraph({
+          heading: headingMap[tag],
+          children: parseHtmlInline(el, TextRun, ExternalHyperlink),
+        })
+      );
+      continue;
     }
-    return runs;
-  }
 
-  function getInlineText(tokens: Token[]): string {
-    return tokens
-      .map((t: Token) => {
-        if (t.tokens) return getInlineText(t.tokens);
-        if (t.text) return t.text;
-        return '';
-      })
-      .join('');
-  }
+    // 段落
+    if (tag === 'p') {
+      children.push(
+        new Paragraph({
+          children: parseHtmlInline(el, TextRun, ExternalHyperlink),
+        })
+      );
+      continue;
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tokens: any[] = marked.lexer(markdown);
-  const children: (InstanceType<typeof Paragraph> | InstanceType<typeof Table>)[] = [];
-
-  for (const token of tokens) {
-    switch (token.type) {
-      case 'heading': {
-        const headingLevels: Record<number, (typeof HeadingLevel)[keyof typeof HeadingLevel]> = {
-          1: HeadingLevel.HEADING_1,
-          2: HeadingLevel.HEADING_2,
-          3: HeadingLevel.HEADING_3,
-          4: HeadingLevel.HEADING_4,
-          5: HeadingLevel.HEADING_5,
-          6: HeadingLevel.HEADING_6,
-        };
+    // 无序/有序列表
+    if (tag === 'ul' || tag === 'ol') {
+      const ordered = tag === 'ol';
+      const items = el.querySelectorAll(':scope > li');
+      items.forEach((li, index) => {
+        const prefix = ordered ? `${index + 1}. ` : '• ';
+        const content = [
+          new TextRun({ text: prefix }),
+          ...parseHtmlInline(li, TextRun, ExternalHyperlink),
+        ];
         children.push(
           new Paragraph({
-            heading: headingLevels[token.depth || 1],
-            children: token.tokens ? parseInlineTokens(token.tokens) : [new TextRun({ text: token.text || '' })],
-          })
-        );
-        break;
-      }
-      case 'paragraph': {
-        children.push(
-          new Paragraph({
-            children: token.tokens ? parseInlineTokens(token.tokens) : [new TextRun({ text: token.text || '' })],
-          })
-        );
-        break;
-      }
-      case 'list': {
-        const listItems = token.items || [];
-        for (const item of listItems) {
-          const inlineTokens = item.tokens
-            ? collectInlineTokens(item.tokens)
-            : [];
-          const prefix = token.ordered ? '' : '• ';
-          const content: InlineContent[] = [
-            new TextRun({ text: prefix }),
-            ...(inlineTokens.length > 0
-              ? parseInlineTokens(inlineTokens)
-              : [new TextRun({ text: item.text || '' })]),
-          ];
-          children.push(
-            new Paragraph({
-              children: content,
-              indent: { left: 720 },
-            })
-          );
-        }
-        break;
-      }
-      case 'code': {
-        const codeLines = (token.text || '').split('\n');
-        for (const line of codeLines) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun({ text: line, font: 'Courier New', size: 20 })],
-            })
-          );
-        }
-        break;
-      }
-      case 'blockquote': {
-        const bqInlineTokens = token.tokens
-          ? collectInlineTokens(token.tokens)
-          : [];
-        const bqText = bqInlineTokens.length > 0
-          ? getInlineText(bqInlineTokens)
-          : token.text || '';
-        children.push(
-          new Paragraph({
-            children: [new TextRun({ text: bqText, italics: true, color: '5a5a6e' })],
+            children: content,
             indent: { left: 720 },
-            border: {
-              left: { style: BorderStyle.SINGLE, size: 3, color: 'd0d0d8' },
-            },
           })
         );
-        break;
-      }
-      case 'hr': {
-        children.push(new Paragraph({ children: [] }));
-        break;
-      }
-      case 'table': {
-        const headerCells =
-          token.header?.map(
-            (h: Token) =>
-              new TableCell({
-                children: [new Paragraph({ children: [new TextRun({ text: h.text || '', bold: true })] })],
-                width: { size: 100 / (token.header?.length || 1), type: WidthType.PERCENTAGE },
-              })
-          ) || [];
+      });
+      continue;
+    }
 
-        const dataRows =
-          token.rows?.map(
-            (row: Token[]) =>
-              new TableRow({
-                children: row.map(
-                  (cell: Token) =>
-                    new TableCell({
-                      children: [new Paragraph({ children: [new TextRun({ text: cell.text || '' })] })],
-                    })
-                ),
-              })
-          ) || [];
+    // 代码块
+    if (tag === 'pre') {
+      const codeEl = el.querySelector('code');
+      const codeText = codeEl ? (codeEl.textContent || '') : (el.textContent || '');
+      for (const line of codeText.split('\n')) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: line, font: 'Courier New', size: 20 })],
+          })
+        );
+      }
+      continue;
+    }
 
-        if (headerCells.length > 0) {
-          children.push(
-            new Table({
-              rows: [new TableRow({ children: headerCells, tableHeader: true }), ...dataRows],
-              width: { size: 100, type: WidthType.PERCENTAGE },
+    // 引用
+    if (tag === 'blockquote') {
+      const bqText = el.textContent || '';
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: bqText, italics: true, color: '5a5a6e' })],
+          indent: { left: 720 },
+          border: {
+            left: { style: BorderStyle.SINGLE, size: 3, color: 'd0d0d8' },
+          },
+        })
+      );
+      continue;
+    }
+
+    // 表格
+    if (tag === 'table') {
+      const rows: InstanceType<typeof TableRow>[] = [];
+      const thead = el.querySelector('thead');
+      const tbody = el.querySelector('tbody') || el;
+
+      if (thead) {
+        const headerRow = thead.querySelector('tr');
+        if (headerRow) {
+          const cells = Array.from(headerRow.querySelectorAll('th, td'));
+          rows.push(
+            new TableRow({
+              children: cells.map(
+                (cell) =>
+                  new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: cell.textContent || '', bold: true })] })],
+                    width: { size: 100 / cells.length, type: WidthType.PERCENTAGE },
+                  })
+              ),
+              tableHeader: true,
             })
           );
         }
-        break;
       }
-      case 'space':
-        break;
-      default:
-        if (token.text) {
-          children.push(new Paragraph({ children: [new TextRun({ text: token.text })] }));
+
+      const bodyRows = tbody.querySelectorAll('tr');
+      bodyRows.forEach((tr) => {
+        // 跳过 thead 中的行
+        if (thead && thead.contains(tr)) return;
+        const cells = Array.from(tr.querySelectorAll('td, th'));
+        if (cells.length > 0) {
+          rows.push(
+            new TableRow({
+              children: cells.map(
+                (cell) =>
+                  new TableCell({
+                    children: [new Paragraph({ children: [new TextRun({ text: cell.textContent || '' })] })],
+                  })
+              ),
+            })
+          );
         }
+      });
+
+      if (rows.length > 0) {
+        children.push(
+          new Table({
+            rows,
+            width: { size: 100, type: WidthType.PERCENTAGE },
+          })
+        );
+      }
+      continue;
+    }
+
+    // 水平线
+    if (tag === 'hr') {
+      children.push(new Paragraph({ children: [] }));
+      continue;
+    }
+
+    // 其他元素作为段落
+    const text = el.textContent;
+    if (text) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text })],
+        })
+      );
     }
   }
 
   const doc = new Document({
-    sections: [
-      {
-        children,
-      },
-    ],
+    sections: [{ children }],
   });
 
   const blob = await Packer.toBlob(doc);
