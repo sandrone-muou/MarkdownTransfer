@@ -25,7 +25,12 @@ export function convertMarkdownToHtml(markdown: string): string {
 
 // ===== 导出为 TXT =====
 export function exportToTxt(markdown: string, filename = 'document') {
-  const blob = new Blob([markdown], { type: 'text/plain;charset=utf-8' });
+  const html = convertMarkdownToHtml(markdown);
+  // 从 HTML 中提取纯文本内容（转换后的结果）
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  const text = tempDiv.textContent || tempDiv.innerText || '';
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
   saveAs(blob, `${filename}.txt`);
 }
 
